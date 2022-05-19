@@ -41,7 +41,15 @@ Isoswitch works with Seurat objects with gene- and isoform-level counts.
 
 ### 2\. Isoform characterization
 
-to be completed (…)
+You can get a plot summarizing number of genes, number of transcripts,
+distribution of isoforms and number of genes per cell type using the
+method *plot\_assay\_stats*
+
+``` r
+plot_assay_stats(seurat, "isoform")
+```
+
+![alt text](./man/figures/Fig4_isosummary.png)
 
 Counts
 
