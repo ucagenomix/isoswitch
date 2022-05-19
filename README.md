@@ -30,7 +30,8 @@ devtools::install_github("atienza-ipmc/isoswitch")
 3.  Switch search
 4.  Gene reports
 
-Below is a short introduction to the use of the package using a
+Below is a short overview of the package functionality using a fake
+dataset.
 
 ### 1 - Input data / object setup
 
@@ -48,8 +49,6 @@ and returns a data frame with the following structure:
 
 ``` r
 stats <- iso_compute_stats(seurat@assays$multi@counts) %>% arrange(gene_id)
-#> Warning in iso_compute_stats(seurat@assays$multi@counts): features with 0
-#> expression found in matrix
 head(stats, n=4)
 #>                 feature gene_id   transcript_id sum total_gene n_isofs max_sum
 #> 1 A1BG..ENST00000596924    A1BG ENST00000596924   5          8       2       5
@@ -73,38 +72,61 @@ plot_assay_stats(seurat, "isoform")
 
 ![alt text](./man/figures/Fig4_isosummary.png)
 
-Counts
+### 3\. Isoform switch search
 
-that containsic example which shows you how to solve a common problem:
+The term “isoform switch” refers to an event where two isoforms of the
+same gene are considered markers of different clusters.
 
-``` r
-library(isoswitch)
-## basic example code
-```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+The marker search is implemented on **ISO\_SWITCH\_ALL** which relies on
+Seurat’s FindMarkers functionality.
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+clusters <- levels(seurat@active.ident)
+switch_markers <- ISO_SWITCH_ALL(seurat, clusters, assay="isoform", min.pct=0, logfc.threshold=0.40, verbose=TRUE)
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
+The result of **ISO\_SWITCH\_ALL** is a data frame of transcripts
+considered statistically significant markers of certain clusters. The
+method **compute\_switches** takes a list of markers as input and
+combines them into switches, ranking the list of switches according to
+different possible criteria.
 
-You can also embed plots, for example:
+``` r
+switches <- compute_switches(switch_markers)
+```
 
-<img src="man/figures/README-pressure-1.svg" width="100%" />
+The helper method **format\_switch\_table** prettifies the switch table
+for reports:
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+To facilitate the interpretation of this data, two methods
+**plot\_marker\_matrix** and **plot\_marker\_score** generate plots with
+1) heatmap of number of unique genes per contrast between clusters and
+2) volcano-like showing p-values and average logFC for each gene with an
+isoform switch
+
+``` r
+pl1 <- plot_marker_matrix(seurat, switch_markers) 
+pl2 <- plot_marker_score(adult, switch_markers, facet=FALSE, overlaps=16)
+pl1 | pl2 
+```
+
+![alt text](./man/figures/Fig7_isoswitch.png) Alternatively,
+**plot\_marker\_score** can also plot individual plots for each cluster
+analyzed
+
+``` r
+plot_marker_score(adult, switch_markers, facet=TRUE, ncol=3)
+```
+
+![alt text](./man/figures/Fig7_facet.png)
+
+### 4\. Gene reports
+
+After identifying genes of interest, **isoswitch\_report** produces a
+detailed report of the isoform switch
+
+``` r
+isoswitch_report(seurat, "isoform", gene="HYAL2", marker_list=switch_markers) 
+```
+
+![alt text](./man/figures/Fig7_hyal2.png)
