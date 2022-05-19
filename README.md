@@ -30,6 +30,8 @@ devtools::install_github("atienza-ipmc/isoswitch")
 3.  Switch search
 4.  Gene reports
 
+Below is a short introduction to the use of the package using a
+
 ### 1 - Input data / object setup
 
 Isoswitch works with Seurat objects with gene- and isoform-level counts.
@@ -41,9 +43,29 @@ Isoswitch works with Seurat objects with gene- and isoform-level counts.
 
 ### 2\. Isoform characterization
 
-You can get a plot summarizing number of genes, number of transcripts,
-distribution of isoforms and number of genes per cell type using the
-method *plot\_assay\_stats*
+The method **iso\_compute\_stats** parses the isoform raw count matrix
+and returns a data frame with the following structure:
+
+``` r
+stats <- iso_compute_stats(seurat@assays$multi@counts) %>% arrange(gene_id)
+#> Warning in iso_compute_stats(seurat@assays$multi@counts): features with 0
+#> expression found in matrix
+head(stats, n=4)
+#>                 feature gene_id   transcript_id sum total_gene n_isofs max_sum
+#> 1 A1BG..ENST00000596924    A1BG ENST00000596924   5          8       2       5
+#> 2 A1BG..ENST00000598345    A1BG ENST00000598345   3          8       2       5
+#> 3  A2M..ENST00000495709     A2M ENST00000495709  10         14       2      10
+#> 4  A2M..ENST00000318602     A2M ENST00000318602   4         14       2      10
+#>       perc is_major is_top
+#> 1 62.50000     TRUE   TRUE
+#> 2 37.50000     TRUE  FALSE
+#> 3 71.42857     TRUE   TRUE
+#> 4 28.57143    FALSE  FALSE
+```
+
+The method **plot\_assay\_stats** builds on this data to plot a summary
+with number of genes, number of transcripts, distribution of isoforms
+and number of genes per cell type.
 
 ``` r
 plot_assay_stats(seurat, "isoform")

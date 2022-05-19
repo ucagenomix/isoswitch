@@ -12,7 +12,11 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 
-# seurat <- readRDS("/data/10x_data/10x_5psanger/output/adult50.rds")
+# test data
+library(dplyr)
+library(isoswitch)
+seurat <- readRDS("/data/10x_data/10x_5psanger/output/adult50.rds")
+
 ```
 
 # isoswitch
@@ -39,6 +43,7 @@ devtools::install_github("atienza-ipmc/isoswitch")
 3. Switch search
 4. Gene reports
 
+Below is a short overview of the package functionality using a fake dataset.
 
 ### 1 - Input data / object setup
 
@@ -50,7 +55,14 @@ Isoswitch works with Seurat objects with gene- and isoform-level counts.
 
 ### 2. Isoform characterization
 
-You can get a plot summarizing number of genes, number of transcripts, distribution of isoforms and number of genes per cell type using the method *plot_assay_stats*
+The method **iso_compute_stats** parses the isoform raw count matrix and returns a data frame with the following structure:
+
+```{r echo=TRUE}
+stats <- iso_compute_stats(seurat@assays$multi@counts) %>% arrange(gene_id)
+head(stats, n=4)
+```
+
+The method **plot_assay_stats** builds on this data to plot a summary with number of genes, number of transcripts, distribution of isoforms and number of genes per cell type.
 
 ```{r, eval=FALSE}
 plot_assay_stats(seurat, "isoform")
