@@ -197,7 +197,9 @@ format_switch_table <- function(switch_df) {
 
 
 
-#' Returns a nicely formatted switch table for reports
+#' Returns a html switch table for reports
+#'
+#' Can only be used on html output documents.
 #'
 #' @param marker_list Marker list returned by ISO_SWITCH_ALL
 #'

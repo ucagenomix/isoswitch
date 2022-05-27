@@ -129,29 +129,10 @@ switch_markers <- ISO_SWITCH_ALL(seurat, clusters, assay="isoform",
 `ISO_SWITCH_ALL()` returns a data frame of transcripts identified as markers of 
 a given cluster for a given gene, one transcript per row. 
 
-The method `compute_switches()` takes a list of markers as input and combines 
-them into a data frame where all the parameters defining an isoform switch 
-is contained in a single row. 
-
-
-```{r, eval=FALSE}
-switches <- compute_switches(switch_markers)
-```
-
-The helper method `gene_switch_table()` can be  used to print a summary of 
-isoform switches for reports. 
-
-
-```{r eval=TRUE}
-gene_switch_table(switch_markers)
-```
-
-
-Alternatively, to facilitate the graphical interpretation of the results:
+To facilitate the graphical interpretation of the results:
 
 * `plot_marker_matrix()` produces a heatmap of number of unique genes per contrast between clusters   
 * `plot_marker_score()` produces a volcano plot showing p-values and average logFC for each gene with an isoform switch   
-
 
 ```{r, eval=FALSE}
 pl1 <- plot_marker_matrix(seurat, switch_markers) 
@@ -168,6 +149,17 @@ plot_marker_score(adult, switch_markers, facet=TRUE, ncol=3)
 
 ![alt text](./man/figures/Fig7_facet.png)
 
+
+The method `compute_switches()` and  `gene_switch_table()` compute isoform 
+switchs from a list of markrs and return a data.frame and an html table respectively 
+(only compatible with html output documents such as Rmd reports)
+
+```{r, eval=FALSE}
+switches <- compute_switches(switch_markers)
+gene_switch_table(switch_markers)
+```
+
+
 ### 4. Gene reports
 
 
@@ -180,6 +172,8 @@ producing gene-level reports:
 isoswitch_report(seurat, "isoform", gene="HYAL2", marker_list=switch_markers) 
 ```
  ![alt text](./man/figures/Fig7_hyal2.png)
+
+
 * The `render_html_gene_report()` method renders an [html version](https://www.isomics.eu/reports/fetal/genes/C3_CD36.nb.html) of the report
 
 
