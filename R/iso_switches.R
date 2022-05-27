@@ -1,56 +1,3 @@
-# ______________________________________________________________________________
-
-#' Scales raw transcript counts relative to total gene expression
-#'
-#' @param seurat Seurat object
-#' @param assay Assay to pull data from
-#' @param name Name for new assay with scaled data
-#'
-#' @return Seurat object with scaled data in new slot
-#' @export
-#'
-#' @examples
-scale_my_data <- function(seurat, assay, name="scale.data"){
-
-  data_in <- as.matrix(seurat@assays[[assay]]@data)
-
-  # retrieve unique gene names as df
-  mat <- sapply(strsplit(rownames(data_in), "\\.\\."), `[`, 1)
-  all.genes <- unique(mat)
-  all.genes <- as.data.frame(all.genes)
-
-  print(paste("Unique features =", dim(all.genes)[1], "out of", dim(data_in)[1], "total features", sep=" "))
-
-  colnames(all.genes)<-c("geneId")
-  rownames(all.genes) <- all.genes$geneId
-
-  output <- data_in
-
-  # for all genes
-  for(i in 1:dim(all.genes)[1]){
-
-    # print(paste("i",i,sep="="))
-    x <- which(mat == all.genes[i,])
-    m <- mean(unlist(data_in[x,]))
-    sd <- sd(unlist(data_in[x,]))
-
-    # for all gene isoforms
-    for(j in 1:length(x)){
-      # print(paste("j",j,length(x),sep="="))
-
-      # for all cells
-      for(k in 1:dim(data_in)[2]){
-        #print(paste("k",k,sep="="))
-        output[x[j],k] <- (data_in[x[j],k] - m)/sd
-      }
-    }
-  }
-
-  seurat <- Seurat::SetAssayData(seurat, slot = name, output, assay = assay)
-  return(seurat)
-}
-
-# ______________________________________________________________________________
 
 
 #' Find transcript markers of isoform switches
@@ -222,3 +169,75 @@ compute_switches <- function(marker_list, cutoff=0.05, gene=NULL, cluster=NULL, 
 
   return(switch_list)
 }
+
+
+# ______________________________________________________________________________
+
+#' Clean up / format switch data frame for reports
+#'
+#' @param switch_df Output from call to compute_switches
+#'
+#' @return same df with selected columns and number formatting
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#'
+#' @examples
+format_switch_table <- function(switch_df) {
+  out <- switch_df %>%
+    select(geneId, t1, c1, p1, log2fc1, t2, c2, p2, log2fc2) %>%
+    mutate(p1 = format(p1, digits=3),
+           log2fc1 = format(log2fc1, digits=2),
+           p2 = format(p2, digits=3),
+           log2fc2 = format(log2fc2, digits=2))
+
+  return(out)
+}
+
+
+
+
+#' Returns a nicely formatted switch table for reports
+#'
+#' @param marker_list Marker list returned by ISO_SWITCH_ALL
+#'
+#' @return A reactable printable object
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @importFrom reactablefmtr default
+#'
+#' @examples
+gene_switch_table <- function(marker_list) {
+
+  # Find unique genes in marker_list with lowest adj p-value
+  react_df <- group_by(marker_list, geneId) %>%
+    slice_min(order_by=p_val_adj, n=1, with_ties=FALSE) %>%
+    arrange(p_val_adj) %>%
+    # filter columns of interest & formatting
+    dplyr::select(geneId, avg_log2FC, pct.1, pct.2, p_val_adj, contrast) %>%
+    mutate(p_val_adj = as.double(format(p_val_adj, digits=3)))
+
+  table <- htmltools::tagList(
+    reactR::html_dependency_react(),
+    reactR::html_dependency_reacttools(),
+    reactable(react_df,
+              style = list(fontFamily = "Work Sans, sans-serif", fontSize = "12px"),
+              defaultColDef = colDef(minWidth=80),
+              columns = list(
+                geneId = colDef(filterable = TRUE, width=90),
+                avg_log2FC = colDef(format = colFormat(digits = 2), width=90),
+                pct.1 = colDef(width=70),
+                pct.2 = colDef(width=70),
+                p_val_adj = colDef(width=120, align = "right"),
+                contrast = colDef(minWidth = 150, filterable = TRUE)
+              ),
+              defaultPageSize = 15,
+              striped=TRUE,
+              compact=TRUE,
+              theme = reactablefmtr::default(centered = TRUE, font_size=12, header_font_size = 13))
+  )
+
+  return(table)
+}
+

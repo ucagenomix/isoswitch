@@ -2,7 +2,7 @@
 % Please edit documentation in R/iso_visual.R
 \name{plot_assay_stats}
 \alias{plot_assay_stats}
-\title{Title}
+\title{Plot summary stats on gene and isoform expression}
 \usage{
 plot_assay_stats(obj, assay)
 }
@@ -15,5 +15,10 @@ plot_assay_stats(obj, assay)
 ggplot object, patchwork of 4 plots
 }
 \description{
-Title
+Produces a 4 panel plot including a) Number of total genes and transcripts
+and percentage of genes expressing one or more isoforms. (b) Distribution
+of the number of isoforms per gene. (c) Relationship between the number of
+major isoforms (y-axis) and the total number of isoforms per gene (x-axis).
+(d) Pseudo-bulk estimation of number of genes expressed per cell type
+(each data point represents the aggregation of 10 cells)
 }

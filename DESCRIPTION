@@ -29,7 +29,10 @@ Imports:
     patchwork,
     cowplot,
     ggtranscript,
-    grid
+    grid,
+    reactablefmtr,
+    htmltools,
+    reactR
     
     
     

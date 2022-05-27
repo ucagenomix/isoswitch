@@ -65,11 +65,11 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, i=1) {
   features = c(glue("{switch$geneId}..{switch$t1}"), glue("{switch$geneId}..{switch$t2}"))
   short_names = map(features,  ~meta[meta$feature==.x, "external_transcript_name"])
 
-  pls <- Seurat::VlnPlot(obj, idents=idents, features=features, combine=FALSE, same.y.lims=TRUE)
+  pls <- Seurat::VlnPlot(obj, idents=idents, features=features, pt.size=0.2, combine=FALSE, same.y.lims=TRUE, raster=TRUE)
 
   ft <- Seurat::FeaturePlot(obj, features=features,
                    cells=Seurat::WhichCells(obj, idents = idents),
-                   ncol=1, blend=TRUE, pt.size=0.1, combine=FALSE, label=TRUE, label.size=3, repel=TRUE)
+                   ncol=1, blend=TRUE, pt.size=0.1, combine=FALSE, label=TRUE, label.size=3, repel=TRUE, raster=TRUE)
 
   my_theme = theme(title=element_text(size=7, face="plain"),
                    axis.text.x = element_text(angle=0, hjust=0.5, size=8),

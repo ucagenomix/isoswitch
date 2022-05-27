@@ -1,7 +1,15 @@
 
 
-# Plot summary stats on gene and isoform expression in given assay
-#' Title
+#
+#' Plot summary stats on gene and isoform expression
+#'
+#' Produces a 4 panel plot including a) Number of total genes and transcripts
+#' and percentage of genes expressing one or more isoforms. (b) Distribution
+#' of the number of isoforms per gene. (c) Relationship between the number of
+#' major isoforms (y-axis) and the total number of isoforms per gene (x-axis).
+#' (d) Pseudo-bulk estimation of number of genes expressed per cell type
+#' (each data point represents the aggregation of 10 cells)
+#'
 #'
 #' @param obj Seurat object
 #' @param assay Assay to pull data from
