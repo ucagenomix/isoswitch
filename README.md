@@ -174,7 +174,7 @@ and producing gene-level reports:
 
   - The `isoswitch_report()` method produces a compact plot of the gene.
     This function requires an extract from a gene annotation file and
-    transcript metadata, documented [here](./README_metadata.md).
+    transcript metadata, documented [here](./README_metadata.md)
 
 <!-- end list -->
 
