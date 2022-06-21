@@ -1,14 +1,13 @@
 
 #' Gene multi-panel report, including gene locus and junction quantification,
-#' average UMI counts per isoform (p1), dotplot on scale data (p2) and violin
-#' plots of the switch. For genes with several switches the first one is
-#' selected by default, unless overridden with parameter i.
+#' average UMI counts per isoform (p1) and dotplot on normalized scaled data (p2).
 #'
 #' @param obj Seurat object
 #' @param obj_assay Assay to pull data from
 #' @param marker_list Output from ISO_SWITCH_ALL call
 #' @param gene Gene to report on
-#' @param i index of switch to represent
+#' @param gtf_df Data frame extract from gene annotation file
+#' @param transcript_meta Transcript metadata
 #'
 #' @return ggplot object
 #' @export
@@ -22,63 +21,14 @@
 
 #'
 #' @examples
-isoswitch_report <- function(obj, obj_assay, marker_list, gene, i=1) {
-
-  assert_that(gene %in% marker_list$geneId, msg=glue("{gene} not present in marker_list"))
+isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcript_metadata) {
 
   normal_data <- obj@assays[[obj_assay]]@data
-  scaled_data <- obj@assays[[obj_assay]]@scale.data
-
-  # extract isoforms for this gene from matrix count, order by expression
   isofs <- grep(paste("^", gene,"\\.", sep=""), rownames(normal_data), value=TRUE)
-  ordered_isofs <- data.frame(isofs = isofs, expr = Matrix::rowSums(normal_data[isofs, ])) %>%
-    arrange(desc(expr)) %>%
-    pull(isofs)
+  assert_that(length(isofs) > 0, msg = "gene not found")
 
-  # custom scale, brewer.pal(n=10, name="Set3") reordered
-  custom_colors = c("#FB8072","#80B1D3","#8DD3C7","#FFFFB3","#BEBADA",
-                    "#FDB462","#B3DE69","#FCCDE5","#D9D9D9","#BC80BD")
-
-  # build feature metadata (feature => short_name, color, order) shared by all panels
-  meta <- data.frame( feature = ordered_isofs ) %>%
-    separate(feature, into=c("gene_id", "transcript_id"), sep="\\.\\.", remove=FALSE) %>%
-    left_join(transcript_metadata, by=c("transcript_id"="ensembl_transcript_id")) %>%
-    mutate(color = custom_colors[1:length(isofs)])
-
-  # print(meta)
-  #_________________
-
-  gene_switches <- compute_switches(marker_list, gene=gene)
-  assert_that(i <= nrow(gene_switches), msg=glue("i={i}, marker_list has {nrow(gene_switches)} length"))
-  switch <- gene_switches[i, , drop=FALSE]
-
-  # [P1 _________________ { umi counts }
-  p1 <- ._isoswitch_report.umi_counts(obj, gene, meta)
-  p1_celltype_order <- levels(p1$data$cell_type)
-
-  # [P2]_________________ { dotplot }
-  # use same cell_type order in y axis as in p1
-  p2 <- ._isoswitch_report.dotpot(obj, obj_assay, meta, celltype_order=p1_celltype_order, switch)
-
-  # [Feature & VlnPlot] _________________
-  idents = c(switch$c1, switch$c2)
-  features = c(glue("{switch$geneId}..{switch$t1}"), glue("{switch$geneId}..{switch$t2}"))
-  short_names = map(features,  ~meta[meta$feature==.x, "external_transcript_name"])
-
-  pls <- Seurat::VlnPlot(obj, idents=idents, features=features, pt.size=0.2, combine=FALSE, same.y.lims=TRUE, raster=TRUE)
-
-  ft <- Seurat::FeaturePlot(obj, features=features,
-                   cells=Seurat::WhichCells(obj, idents = idents),
-                   ncol=1, blend=TRUE, pt.size=0.1, combine=FALSE, label=TRUE, label.size=3, repel=TRUE, raster=TRUE)
-
-  my_theme = theme(title=element_text(size=7, face="plain"),
-                   axis.text.x = element_text(angle=0, hjust=0.5, size=8),
-                   axis.text.y = element_text(size=8),
-                   legend.position = "none")
-
-  pls[[1]] <- pls[[1]] + my_theme + labs(title=short_names[[1]], x=NULL, y=NULL)
-  pls[[2]] <- pls[[2]] + my_theme + labs(title=short_names[[2]], x=NULL, y=NULL)
-  ft[[3]] <- ft[[3]] + my_theme + labs(x=NULL, y=NULL, title=NULL)
+  # metadata shared by all panels (feature => short_name, color, order)
+  meta <- ._build_plot_metadata(isofs, normal_data, transcript_metadata)
 
   # [Locus] _________________
   n_isofs = length(isofs)
@@ -90,32 +40,34 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, i=1) {
   if(!is.null(obj@assays$junction)) {
     jct_plot <- ._isoswitch_report.junctions(obj, "junction", gtf_df, gene, meta)
     jct_h <- 1.0
-  }
-  else {
+  } else {
     jct_plot <- plot_spacer()
     jct_h <- 0.01
   }
 
+  # [P1 _________________ { umi counts }
+  p1 <- ._isoswitch_report.umi_counts(obj, gene, meta)
+  p1_celltype_order <- levels(p1$data$cell_type)
+
+  # [P2]_________________ { dotplot }
+  # use same cell_type order in y axis as in p1
+  p2 <- ._isoswitch_report.dotpot(obj, obj_assay, meta, celltype_order=p1_celltype_order)
 
   # [PATCHWORK ] _________________
   pw <- loc_plot /
     jct_plot  /
     plot_spacer() /
-    (p1 | p2) /
-    plot_spacer() /
-    ( pls[[1]] + pls[[2]] + ft[[3]] )
+    (p1 | p2)
 
   pw <- pw +
     plot_annotation(title = gene,
                     theme = theme(plot.title = element_text(size = 30))) +
     # 'null' expands to available space
-    plot_layout(heights = unit(c(loc_h,  jct_h,  0.15,      5,  0.15,   2),
-                               c( 'cm',   'cm',  'cm', 'null',  'cm', 'cm')))
+    plot_layout(heights = unit(c(loc_h,  jct_h,  0.15,      5),
+                               c( 'cm',   'cm',  'cm', 'null')))
 
-  # print(pw)
+
   return(pw)
-
-  #return(gene_switches)
 
 }
 # ______________________________________________________________________________
@@ -126,7 +78,9 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, i=1) {
 #' @param obj_assay Assay to pull data from
 #' @param marker_list Output from ISO_SWITCH_ALL call
 #' @param gene Gene to report on
-#' @param i (unused)
+#' @param gtf_df Data frame extract from gene annotation file
+#' @param transcript_meta Transcript metadata
+
 #'
 #' @return tbc
 #' @export
@@ -138,33 +92,17 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, i=1) {
 #' @import glue
 #'
 #' @examples
-isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, i=1) {
-
-  assert_that(gene %in% marker_list$geneId, msg=glue("{gene} not present in marker_list"))
+isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript_metadata) {
 
   normal_data <- obj@assays[[obj_assay]]@data
-  scaled_data <- as.matrix(obj@assays[[obj_assay]]@scale.data)
-
-  # extract isoforms for this gene from matrix count, order by expression
   isofs <- grep(paste("^", gene,"\\.", sep=""), rownames(normal_data), value=TRUE)
-  ordered_isofs <- data.frame(isofs = isofs, expr = Matrix::rowSums(normal_data[isofs, ])) %>%
-    arrange(desc(expr)) %>%
-    pull(isofs)
+  assert_that(length(isofs) > 0, msg = "gene not found")
 
-  # custom scale, brewer.pal(n=10, name="Set3") reordered
-  custom_colors = c("#FB8072","#80B1D3","#8DD3C7","#FFFFB3","#BEBADA",
-                    "#FDB462","#B3DE69","#FCCDE5","#D9D9D9","#BC80BD")
-
-  # build feature metadata (feature => short_name, color, order) shared by all panels
-  meta <- data.frame( feature = ordered_isofs ) %>%
-    separate(feature, into=c("gene_id", "transcript_id"), sep="\\.\\.", remove=FALSE) %>%
-    left_join(transcript_metadata, by=c("transcript_id"="ensembl_transcript_id")) %>%
-    mutate(color = custom_colors[1:length(isofs)])
-
+  # metadata shared by all panels (feature => short_name, color, order)
+  meta <- ._build_plot_metadata(isofs, normal_data, transcript_metadata)
 
   # [P1 _________________ { umi counts }
   p1 <- ._isoswitch_report.umi_counts(obj, gene, meta, legend=TRUE)
-
 
   # [PATCHWORK ] _________________
   # extract the legend
@@ -177,6 +115,43 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, i=1) {
 }
 
 # ______________________________________________________________________________
+
+#' Returns a dataframe of metadata shared by all panels (feature => short_name, color, order)
+#'
+#' @param isofs TBC
+#' @param normal_data TBC
+#' @param transcript_meta TBC
+#'
+#' @return Returns a dataframe of metadata shared by all panels (feature => short_name, color, order)
+#' @export
+#'
+#' @examples
+#'
+._build_plot_metadata <- function(isofs, normal_data, transcript_meta) {
+
+  # order by expression
+  ordered_isofs <- data.frame(isofs = isofs, expr = Matrix::rowSums(normal_data[isofs, ])) %>%
+    arrange(desc(expr)) %>%
+    pull(isofs)
+
+  # custom scale, brewer.pal(n=10, name="Set3") reordered
+  custom_colors = c("#FB8072","#80B1D3","#8DD3C7","#FFFFB3","#BEBADA",
+                    "#FDB462","#B3DE69","#FCCDE5","#D9D9D9","#BC80BD")
+
+  # build feature metadata (feature => short_name, color, order) shared by all panels
+  meta <- data.frame( feature = ordered_isofs ) %>%
+    separate(feature, into=c("gene_id", "transcript_id"), sep="\\.\\.", remove=FALSE) %>%
+    left_join(transcript_meta, by=c("transcript_id"="ensembl_transcript_id")) %>%
+    mutate(color = custom_colors[1:length(isofs)])
+
+  return(meta)
+}
+
+
+
+# ______________________________________________________________________________
+
+
 
 
 #' Title
@@ -252,9 +227,9 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, i=1) {
     labs(x=NULL, y=NULL, fill="Expression", size="% cells")
 
   # add switch segment
-  p2 <- p2 + geom_segment(x=meta[meta$transcript_id==switch$t1, "external_transcript_name"], y=switch$c1,
-                          xend=meta[meta$transcript_id==switch$t2, "external_transcript_name"], yend=switch$c2,
-                          alpha=1, linetype=5, color="gray", lineend="round", size=0.1)
+  # p2 <- p2 + geom_segment(x=meta[meta$transcript_id==switch$t1, "external_transcript_name"], y=switch$c1,
+  #                         xend=meta[meta$transcript_id==switch$t2, "external_transcript_name"], yend=switch$c2,
+  #                         alpha=1, linetype=5, color="gray", lineend="round", size=0.1)
   return(p2)
 }
 
@@ -414,10 +389,6 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, i=1) {
                      legend.box.margin=margin(0,0,0,0))
   else
     p1 <- p1 + theme(legend.position = "none")
-
-  # https://stackoverflow.com/questions/30035955/dynamically-formatting-individual-axis-labels-in-ggplot2
-  # element_text(face=ifelse(breaks %in% labels[match(label.index, 1:length(breaks))],
-  #                       "bold", "plain")))
 
   return(p1)
 }

@@ -2,6 +2,7 @@
 #' Flags major and top (most expressed) transcripts
 #'
 #' @param count_matrix Count matrix of seurat object
+#' @param count_zeros if TRUE (default), features with zero expression are included in the stats
 #'
 #' @return data.frame with feature/gene_id/transcript_id, (sum) at transcript level
 #'   relative percentage (perc) over total gene expression, boolean flags for major
@@ -11,14 +12,18 @@
 #' @export
 #'
 #' @examples
-iso_compute_stats <- function(count_matrix){
+iso_compute_stats <- function(count_matrix, count_zeros=TRUE){
 
   df <- data.frame(feature = rownames(count_matrix)) %>%
     tidyr::separate(feature, into=c("gene_id", "transcript_id"), sep="\\.\\.", remove=FALSE) %>%
     mutate(sum = Matrix::rowSums(count_matrix))
 
-  if(nrow(filter(df, sum==0)))
-    warning("features with 0 expression found in matrix")
+  if (count_zeros) {
+    if(nrow(filter(df, sum==0)))
+      warning("Features with expression=0 found in matrix, use parameter count_zeros=FALSE to exclude them from stats")
+  } else {
+    df <- filter(df, sum > 0 )
+  }
 
   # computes expression at gene-level
   gene_totals <- group_by(df, gene_id) %>%

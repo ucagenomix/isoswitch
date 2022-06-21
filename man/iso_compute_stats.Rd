@@ -5,10 +5,12 @@
 \title{Compute stats on isoform expression relative to the total expression of a gene.
 Flags major and top (most expressed) transcripts}
 \usage{
-iso_compute_stats(count_matrix)
+iso_compute_stats(count_matrix, count_zeros = TRUE)
 }
 \arguments{
 \item{count_matrix}{Count matrix of seurat object}
+
+\item{count_zeros}{if TRUE (default), features with zero expression are included in the stats}
 }
 \value{
 data.frame with feature/gene_id/transcript_id, (sum) at transcript level
