@@ -2,7 +2,7 @@
 % Please edit documentation in R/iso_switches.R
 \name{gene_switch_table}
 \alias{gene_switch_table}
-\title{Returns a nicely formatted switch table for reports}
+\title{Returns a html switch table for reports}
 \usage{
 gene_switch_table(marker_list)
 }
@@ -13,5 +13,5 @@ gene_switch_table(marker_list)
 A reactable printable object
 }
 \description{
-Returns a nicely formatted switch table for reports
+Can only be used on html output documents.
 }

@@ -4,12 +4,14 @@
 \alias{plot_assay_stats}
 \title{Plot summary stats on gene and isoform expression}
 \usage{
-plot_assay_stats(obj, assay)
+plot_assay_stats(obj, assay, bin_size = 10)
 }
 \arguments{
 \item{obj}{Seurat object}
 
 \item{assay}{Assay to pull data from}
+
+\item{bin_size}{Bin size for pseudobulk aggregation of number of genes per cell}
 }
 \value{
 ggplot object, patchwork of 4 plots

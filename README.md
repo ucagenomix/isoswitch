@@ -172,12 +172,14 @@ gene_switch_table(switch_markers)
 After identifying genes of interest, twere are two ways of drilling down
 and producing gene-level reports:
 
-  - The `isoswitch_report()` method produces a compact plot of the gene
+  - The `isoswitch_report()` method produces a compact plot of the gene.
+    This function requires an extract from a gene annotation file and
+    transcript metadata, documented [here](./README_metadata.Rmd).
 
 <!-- end list -->
 
 ``` r
-isoswitch_report(seurat, "isoform", gene="HYAL2", marker_list=switch_markers) 
+isoswitch_report(seurat, "isoform", gene="HYAL2", marker_list=switch_markers, gtf_df, transcript_metadata) 
 ```
 
 ![alt text](./man/figures/Fig7_hyal2.png)

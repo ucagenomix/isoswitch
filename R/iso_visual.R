@@ -13,6 +13,7 @@
 #'
 #' @param obj Seurat object
 #' @param assay Assay to pull data from
+#' @param bin_size Bin size for pseudobulk aggregation of number of genes per cell
 #'
 #' @return ggplot object, patchwork of 4 plots
 #' @export
@@ -23,9 +24,9 @@
 #' @import patchwork
 #'
 #' @examples
-plot_assay_stats <- function(obj, assay) {
+plot_assay_stats <- function(obj, assay, bin_size=10) {
 
-  iso_stats <- iso_compute_stats(obj@assays[[assay]]@counts)
+  iso_stats <- iso_compute_stats(obj@assays[[assay]]@counts, count_zeros=FALSE)
 
   # [p1 - Genes/Transcripts -------]
   total_genes = n_distinct(iso_stats$gene_id)
@@ -53,12 +54,13 @@ plot_assay_stats <- function(obj, assay) {
     labs(x=NULL, y=NULL, fill="")
 
   # [p2 - Genes expressed per cell type  -------]
-  celltype_data <- celltype_features_bulk(obj, assay, bulk_bin_size=10)
+  celltype_data <- celltype_features_bulk(obj, assay, bulk_bin_size=bin_size)
 
   p2 <- ggplot(celltype_data, aes(x=reorder(t,n_genes), y=n_genes)) +
     geom_boxplot() +
     geom_jitter(size=0.5, alpha=0.4) +
     theme_minimal() +
+    scale_y_continuous(limits=c(0, NA)) +
     theme(axis.text.x = element_text(angle=45, hjust=1, size=7.5),
           axis.title = element_text(size=8)) +
     labs(x = "Genes expressed per cell type",
