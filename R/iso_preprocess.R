@@ -21,7 +21,7 @@ iso_preprocess <- function(obj, assay, new_assay, filter_threshold) {
 
   count_matrix <- obj@assays[[assay]]@counts
   cat(paste("Input features: ", dim(count_matrix)[[1]]), "\n")
-  major_isoforms <- iso_compute_stats(as.data.frame(count_matrix))
+  major_isoforms <- iso_compute_stats(count_matrix)
   
   # Remove low-expressed features (under threshold param)
   highly_expressed <- filter(major_isoforms, perc > filter_threshold) %>% pull(feature)
