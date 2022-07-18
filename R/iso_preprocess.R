@@ -23,7 +23,7 @@ iso_preprocess <- function(obj, assay, new_assay, filter_threshold) {
   cat(paste("Input features: ", dim(count_matrix)[[1]]), "\n")
 
   # Remove low-expressed features (under threshold param)
-  highly_expressed <- filter(major_isoforms, perc > filter_threshold) %>% pull(feature)
+  highly_expressed <- filter(count_matrix, perc > filter_threshold) %>% pull(feature)
   high_expr_matrix <- count_matrix[highly_expressed, , drop=FALSE]
 
   # Remove features for single-isoform genes
