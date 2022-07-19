@@ -20,7 +20,7 @@ You can install the development version of isoswitch from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("atienza-ipmc/isoswitch")
+devtools::install_github("ucagenomix/isoswitch")
 ```
 
 ## General Workflow
