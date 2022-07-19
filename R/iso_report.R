@@ -46,7 +46,7 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcri
   }
 
   # [P1 _________________ { umi counts }
-  p1 <- ._isoswitch_report.umi_counts(obj, gene, meta)
+  p1 <- ._isoswitch_report.umi_counts(obj, obj_assay, gene, meta)
   p1_celltype_order <- levels(p1$data$cell_type)
 
   # [P2]_________________ { dotplot }
@@ -102,7 +102,7 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
   meta <- ._build_plot_metadata(isofs, normal_data, transcript_metadata)
 
   # [P1 _________________ { umi counts }
-  p1 <- ._isoswitch_report.umi_counts(obj, gene, meta, legend=TRUE)
+  p1 <- ._isoswitch_report.umi_counts(obj, obj_assay, gene, meta, legend=TRUE)
 
   # [PATCHWORK ] _________________
   # extract the legend
