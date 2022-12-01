@@ -175,7 +175,7 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 ._isoswitch_report.dotpot <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
 
   normal_data <- obj@assays[[obj_assay]]@data
-  scaled_data <- obj@assays[[obj_assay]]@scale.data
+  scaled_data <- obj@assays[[obj_assay]]@data
 
   df <- data.frame()
   for(cell_type in levels(obj@active.ident)) {
