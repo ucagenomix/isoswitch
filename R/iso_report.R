@@ -22,10 +22,7 @@
 #'
 #' @examples
 isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcript_metadata) {
-  
-  DefaultAssay(obj) <- obj_assay
-  obj[['ISO']] <- NULL
-  
+ 
   normal_data <- obj@assays[[obj_assay]]@data
   isofs <- grep(paste("^", gene,"\\.", sep=""), rownames(normal_data), value=TRUE)
   assert_that(length(isofs) > 0, msg = "gene not found")
@@ -182,10 +179,10 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 #' @examples
 ._isoswitch_report.dotpot2 <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
  
-  DefaultAssay(obj) <- obj_assay
-  
   obj@active.ident <- factor(obj@active.ident, levels=celltype_order)
   isofs <- meta$feature
+  
+  print(isofs)
   
   p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE, cols="RdBu") + 
         scale_x_discrete(labels=meta$external_transcript_name) +
