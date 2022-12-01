@@ -182,7 +182,10 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
   obj@active.ident <- factor(obj@active.ident, levels=celltype_order)
   isofs <- meta$feature
   
-  print(isofs)
+  print(meta)
+ print(obj)
+ print(obj_assay)
+  print(DefaultAssay(obj))
   
   p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE, cols="RdBu") + 
         scale_x_discrete(labels=meta$external_transcript_name) +
