@@ -216,7 +216,7 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
                    fill = avg_scaled_value,
                    size = perc_expr)) +
     geom_point(shape=21, color="#333333") +
-    scale_fill_distiller(palette="RdBu", limits=c(-top_value, top_value)) +
+    scale_fill_distiller(palette="RdBu", limits=c(0, top_value)) +
     theme_minimal() +
     theme(axis.text.x = element_text(angle=0, hjust=0.5, size=8),
           axis.text.y = element_text(size=8),
