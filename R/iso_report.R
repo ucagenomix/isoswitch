@@ -55,7 +55,7 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcri
   print("dotplot")
   # [P2]_________________ { dotplot }
   # use same cell_type order in y axis as in p1
-  p2 <- ._isoswitch_report.dotpot(obj, obj_assay, meta, celltype_order=p1_celltype_order)
+  p2 <- ._isoswitch_report.dotpot2(obj, obj_assay, meta, celltype_order=p1_celltype_order)
 
   print("PATCHWORK")
   # [PATCHWORK ] _________________
@@ -156,8 +156,30 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 
 # ______________________________________________________________________________
 
+#' Title
+#'
+#' @param obj tbc
+#' @param obj_assay tbc
+#' @param meta tbc
+#' @param celltype_order tbc
+#' @param switch tbc
+#'
+#' @return tbc
+#' @export
+#' @importFrom magrittr %>%
+#' @import dplyr
+#' @import ggplot2
+#' @import forcats
+#' @import patchwork
+#' @import glue
+#'
+#' @examples
+._isoswitch_report.dotpot2 <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
 
-
+  isofs <- meta$feature
+  p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE)
+  return(p2)
+}
 
 #' Title
 #'
@@ -178,7 +200,7 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 #'
 #' @examples
 ._isoswitch_report.dotpot <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
-
+  
   normal_data <- obj@assays[[obj_assay]]@data
   scaled_data <- obj@assays[[obj_assay]]@data
 
