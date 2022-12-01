@@ -24,6 +24,7 @@
 isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcript_metadata) {
   
   DefaultAssay(obj) <- obj_assay
+  obj[['ISO']] <- NULL
   
   normal_data <- obj@assays[[obj_assay]]@data
   isofs <- grep(paste("^", gene,"\\.", sep=""), rownames(normal_data), value=TRUE)
