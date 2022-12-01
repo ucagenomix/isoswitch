@@ -40,7 +40,7 @@ iso_preprocess <- function(obj, assay, new_assay, filter_threshold) {
   # Use custom scaling for each isoform feature at gene level
   DefaultAssay(obj) <- new_assay
   obj <- NormalizeData(obj)
-  obj <- scale_isoform(obj, new_assay)
+  #obj <- scale_isoform(obj, new_assay)
   return(obj)
 
 }
