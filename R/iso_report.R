@@ -177,8 +177,8 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 ._isoswitch_report.dotpot2 <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
  
   obj@active.ident <- factor(obj@active.ident, levels=celltype_order)
-  
   isofs <- meta$feature
+  
   p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE, cols="RdBu") + 
         scale_x_discrete(labels=meta$external_transcript_name) +
         labs(x=NULL, y=NULL, fill="Expression", size="% cells") +
@@ -188,7 +188,7 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
           legend.title = element_text(size=9),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          axis.line = element_blank()) +
+          axis.line = element_blank())
   
   
   return(p2)
