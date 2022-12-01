@@ -177,7 +177,13 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
 ._isoswitch_report.dotpot2 <- function(obj, obj_assay, meta, celltype_order=NULL, switch=NULL) {
 
   isofs <- meta$feature
-  p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE)
+  p2 <- DotPlot(obj, assay=obj_assay, features=isofs, scale=FALSE) + 
+        scale_x_discrete(labels=meta$external_transcript_name) +
+        scale_fill_distiller(palette="RdBu")
+  
+  
+  
+  
   return(p2)
 }
 
