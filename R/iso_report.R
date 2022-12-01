@@ -140,8 +140,11 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
     pull(isofs)
 
   # custom scale, brewer.pal(n=10, name="Set3") reordered
-  custom_colors = c("#FB8072","#80B1D3","#8DD3C7","#FFFFB3","#BEBADA",
-                    "#FDB462","#B3DE69","#FCCDE5","#D9D9D9","#BC80BD")
+  #custom_colors = c("#FB8072","#80B1D3","#8DD3C7","#FFFFB3","#BEBADA",
+  #                  "#FDB462","#B3DE69","#FCCDE5","#D9D9D9","#BC80BD")
+
+  custom_colors = c("#577590","#43aa8b","#90be6d","#f9c74f","#f8961e",
+                    "#f3722c","#f94144","#8d0801","#f786aa","#a14a76")
 
   # build feature metadata (feature => short_name, color, order) shared by all panels
   meta <- data.frame( feature = ordered_isofs ) %>%
