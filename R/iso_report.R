@@ -29,12 +29,14 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcri
 
   # metadata shared by all panels (feature => short_name, color, order)
   meta <- ._build_plot_metadata(isofs, normal_data, transcript_metadata)
-
+  
+  print("Locus")
   # [Locus] _________________
   n_isofs = length(isofs)
   loc_plot <- ._isoswitch_report.locus(gtf_df, gene, meta)
   loc_h <- if(n_isofs <= 3) 1.3 else n_isofs * 0.34
-
+  
+   print("Junction")
   # [Junction] _________________
 
   if(!is.null(obj@assays$junction)) {
@@ -44,15 +46,18 @@ isoswitch_report <- function(obj, obj_assay, marker_list, gene, gtf_df, transcri
     jct_plot <- plot_spacer()
     jct_h <- 0.01
   }
-
+  
+  print("umi counts")
   # [P1 _________________ { umi counts }
   p1 <- ._isoswitch_report.umi_counts(obj, obj_assay, gene, meta)
   p1_celltype_order <- levels(p1$data$cell_type)
-
+  
+  print("dotplot")
   # [P2]_________________ { dotplot }
   # use same cell_type order in y axis as in p1
   p2 <- ._isoswitch_report.dotpot(obj, obj_assay, meta, celltype_order=p1_celltype_order)
 
+  print("PATCHWORK")
   # [PATCHWORK ] _________________
   pw <- loc_plot /
     jct_plot  /
