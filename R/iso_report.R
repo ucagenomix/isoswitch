@@ -191,8 +191,10 @@ isoswitch_report_short <- function(obj, obj_assay, marker_list, gene, transcript
           legend.title = element_text(size=9),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          axis.line = element_blank())
-  
+          axis.line = element_blank()) +
+        geom_segment(x=meta[meta$transcript_id==switch$t1, "external_transcript_name"], y=switch$c1,
+                     xend=meta[meta$transcript_id==switch$t2, "external_transcript_name"], yend=switch$c2,
+                     alpha=1, linetype=5, color="gray", lineend="round", size=0.1)
   
   return(p2)
 }
